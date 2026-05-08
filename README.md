@@ -38,7 +38,7 @@ Copy the printed `https://....trycloudflare.com` URL.
 ## 2. Install and build this MCP server
 
 ```bash
-git clone <this-repo> colab-sandbox-mcp
+git clone https://github.com/unn-Known1/colab-sandbox-mcp
 cd colab-sandbox-mcp
 npm install
 npm run build
