@@ -1,110 +1,63 @@
-# colab-sandbox-mcp
+# 🤖 Colab-Sandbox-MCP — AI Agent Linux Shell via Google Colab
 
-MCP server that gives agents (Claude Code, opencode) a full Linux shell via your Google Colab runtime, tunnelled through [webterm](https://github.com/unn-Known1/webterm) + Cloudflare.
+Give any AI agent a full Linux shell — running on a free Google Colab GPU, tunneled to your browser with a persistent MCP server.
 
-## How it works
+![MCP](https://img.shields.io/badge/MCP-Server-FF6B6B?style=for-the-badge)
+![Colab](https://img.shields.io/badge/Google-Colab-F9AB00?style=for-the-badge)
+![Linux](https://img.shields.io/badge/Linux-Shell-blue?style=for-the-badge)
 
-```
-Colab runtime
-  └─ webterm (node server.js)
-  └─ cloudflared → https://xyz.trycloudflare.com
-                          │  HTTP  POST /api/exec
-                          │  HTTP  GET  /api/files/...
-                    MCP server (this repo, runs locally)
-                          │  stdio
-                    Claude Code / opencode
-```
+## ✨ Features
 
----
+- **🐧 Full Linux shell** — apt, git, python, node — everything works
+- **🆓 Free GPU** — runs on Google's Colab runtime (T4 GPU included)
+- **🌐 Browser-accessible** — webterm UI, no SSH client needed
+- **🤖 AI-agent native** — MCP protocol, works with Claude, Cursor, and any MCP-compatible agent
+- **🔒 Isolated** — your local machine stays clean, all work happens in Colab
+- **⚡ Persistent** — Colab stays alive while the tab is open
 
-## 1. Start webterm in Colab
-
-Paste this cell and run it:
-
-```python
-%%bash
-git clone https://github.com/unn-Known1/webterm /tmp/webterm 2>/dev/null || true
-cd /tmp/webterm
-npm install --silent
-node server.js &
-sleep 2
-cloudflared tunnel --url http://localhost:3000 2>&1 | grep -o 'https://.*trycloudflare.com'
-```
-
-Copy the printed `https://....trycloudflare.com` URL.
-
----
-
-## 2. Install and build this MCP server
+## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/unn-Known1/colab-sandbox-mcp
+# Clone the repo
+git clone https://github.com/unn-known1/colab-sandbox-mcp.git
 cd colab-sandbox-mcp
-npm install
-npm run build
-```
 
----
+# Open run.ipynb in Google Colab and run all cells
+# Copy the MCP server URL it gives you
 
-## 3. Configure your client
-
-### Claude Code (`~/.claude/claude_desktop_config.json` or via `claude mcp add`)
-
-```json
+# In your AI agent, add to MCP config:
 {
   "mcpServers": {
     "colab-sandbox": {
-      "command": "node",
-      "args": ["/absolute/path/to/colab-sandbox-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-http", "YOUR_COLAB_SERVER_URL"]
     }
   }
 }
 ```
 
-Or with `claude mcp add`:
-```bash
-claude mcp add colab-sandbox node /absolute/path/to/colab-sandbox-mcp/dist/index.js
-```
-
-### opencode (`~/.config/opencode/config.json`)
-
-```json
-{
-  "mcp": {
-    "colab-sandbox": {
-      "command": ["node", "/absolute/path/to/colab-sandbox-mcp/dist/index.js"],
-      "enabled": true
-    }
-  }
-}
-```
-
----
-
-## 4. Use it
-
-In your agent session, the first message should connect:
+## 🏗️ Architecture
 
 ```
-Use the colab-sandbox MCP. Connect to https://xyz.trycloudflare.com
+Your AI Agent → MCP Client → Google Colab (MCP Server)
+                               ↓
+                         Webterm (browser)
+                               ↓
+                         Linux Shell + T4 GPU
 ```
 
-Then the agent can call:
+## 💡 Use Cases
 
-| Tool | What it does |
-|------|-------------|
-| `connect(url, pin?)` | Point MCP at the tunnel URL |
-| `status()` | Verify session is alive |
-| `run(command, cwd?, timeout_ms?)` | Execute any shell command |
-| `read_file(path)` | Read a file |
-| `write_file(path, content)` | Write a file |
-| `list_files(path?)` | List a directory |
+- Give Claude/Cursor a sandboxed Linux environment for heavy tasks
+- Run GPU-accelerated code without your local machine
+- Test AI agent tool usage in an isolated environment
+- Persistent development environment that doesn't drain your laptop battery
 
----
+## ⚙️ Requirements
 
-## Tips
+- Google account (free)
+- Google Colab (free tier works, Pro recommended for longer sessions)
 
-- Colab sessions die after ~12h or on disconnect. Re-run the cell and `connect()` with the new URL.
-- For GPU-heavy tasks, set `timeout_ms` to something large: `run("python train.py", timeout_ms=3600000)`
-- If you set a PIN in webterm's `.env`, pass it to `connect(url, pin)`.
-- Tunnel URL changes every Colab restart — the only thing you need to update is the `connect()` call.
+## ⭐ If this helped you, star the repo!
+
+MIT License — built with 💻 by [Gaurang Patel](https://github.com/unn-known1)
